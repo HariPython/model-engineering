@@ -88,6 +88,80 @@ python predict.py --run-dir runs/run_001 --input-csv data/processed/inference_in
 python smoke_test.py
 ```
 
+## MLflow Tracking
+
+This repo now supports optional MLflow tracking on training and evaluation scripts.
+
+1. Install dependencies (includes mlflow):
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Track a supervised training run:
+
+```bash
+python train.py --config configs/train/titanic_random_forest.yaml --mlflow
+```
+
+3. Track an evaluation run:
+
+```bash
+python evaluate.py --run-dir runs/run_titanic_random_forest --target-col target --mlflow
+```
+
+4. Track deep or unsupervised runs:
+
+```bash
+python train_deep.py --config configs/train/digits_cnn.yaml --mlflow
+python train_unsupervised.py --config configs/train/titanic_kmeans_unsupervised.yaml --mlflow
+```
+
+By default, runs are written to local file-based tracking URI `file:./mlruns`.
+
+To use a different tracking backend:
+
+```bash
+python train.py --config configs/train/default.yaml --mlflow --mlflow-tracking-uri http://localhost:5000 --mlflow-experiment ml-demo
+```
+
+To browse local runs with MLflow UI:
+
+```bash
+mlflow ui --backend-store-uri ./mlruns
+```
+
+### Optional: Auto Register Models In MLflow Registry
+
+Training scripts can automatically register logged models by adding:
+- `--mlflow-register-model`
+- `--mlflow-model-name <registry_name>`
+
+Example (supervised):
+
+```bash
+python train.py --config configs/train/titanic_random_forest.yaml --mlflow --mlflow-register-model --mlflow-model-name titanic_survival_rf
+```
+
+Example (deep learning):
+
+```bash
+python train_deep.py --config configs/train/digits_cnn.yaml --mlflow --mlflow-register-model --mlflow-model-name digits_cnn_demo
+```
+
+Example (unsupervised):
+
+```bash
+python train_unsupervised.py --config configs/train/titanic_kmeans_unsupervised.yaml --mlflow --mlflow-register-model --mlflow-model-name titanic_kmeans_demo
+```
+
+For local model registry support, prefer a database-backed tracking URI:
+
+```bash
+python train.py --config configs/train/titanic_random_forest.yaml --mlflow --mlflow-tracking-uri sqlite:///mlflow.db --mlflow-experiment ml-demo --mlflow-register-model --mlflow-model-name titanic_survival_rf
+mlflow ui --backend-store-uri sqlite:///mlflow.db
+```
+
 ## Classroom Example: Titanic End to End
 
 Use Titanic passenger survival as a simple real-world classification demo.
