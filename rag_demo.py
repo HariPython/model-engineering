@@ -90,6 +90,30 @@ def load_markdown_documents(docs_dir: Path) -> list[Document]:
     return docs
 
 
+def resolve_docs_dir(user_value: str, fallback_parent: str = "reports") -> Path:
+    """Resolve docs directory, supporting shorthand names like 'demo_data'.
+
+    Resolution order:
+    1) user_value
+    2) fallback_parent / user_value
+    """
+    direct = Path(user_value)
+    fallback = Path(fallback_parent) / user_value
+
+    if direct.exists() and direct.is_dir():
+        direct_docs = load_markdown_documents(direct)
+        if direct_docs:
+            return direct
+        if fallback.exists() and fallback.is_dir() and load_markdown_documents(fallback):
+            return fallback
+        return direct
+
+    if fallback.exists() and fallback.is_dir():
+        return fallback
+
+    return direct
+
+
 def resolve_path(user_value: str, fallback_dir: str) -> Path:
     """Resolve a user-supplied path, supporting shorthand filenames.
 
@@ -224,7 +248,7 @@ def main() -> None:
         )
         sys.exit(1)
 
-    docs_dir = Path(args.docs_dir)
+    docs_dir = resolve_docs_dir(args.docs_dir, fallback_parent="reports")
     if not docs_dir.exists():
         print(f"ERROR: docs directory not found: {docs_dir}")
         sys.exit(1)

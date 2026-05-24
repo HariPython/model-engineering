@@ -41,3 +41,7 @@ runs/**/holdout.csv
 # Local demo knowledge base data
 demo_data/
 reports/demo_data/
+
+# MLflow local tracking artifacts
+mlruns/
+mlflow.db
